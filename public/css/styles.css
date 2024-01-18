@@ -1,0 +1,292 @@
+body {
+  font-family: "Open Sans", sans-serif;
+  background-color: #f4f4f4;
+  color: #000000;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #00300b;
+  padding: 10px;
+  text-align: center;
+  color: white;
+}
+
+main {
+  padding: 20px;
+}
+
+.plant-card {
+  border: 1px solid #000000;
+  padding: 50px;
+  margin-bottom: 20px;
+}
+
+.plant-image {
+  max-width: 100%;
+  height: auto;
+}
+
+.plant-details {
+  margin-top: 10px;
+}
+
+.timeline {
+  display: flex;
+  overflow-x: auto;
+}
+
+.timeline img {
+  max-width: 150px;
+  max-height: 150px;
+  margin-right: 10px;
+}
+
+textarea {
+  width: 100%;
+  height: 100px;
+  margin-top: 10px;
+}
+
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  overflow: auto;
+}
+
+.reminder-card {
+  border: 1px solid #000000;
+  padding: 10px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.plant-list {
+  display: flex;
+  overflow-x: auto;
+}
+
+.plant-item {
+  border: 1px solid #000000;
+  padding: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.plant-item:hover {
+  background-color: #f0f0f0;
+}
+
+.photo-timeline-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.photo-timeline-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.photo-timeline-item img {
+  max-width: 100%;
+  height: auto;
+}
+
+.photo-date {
+  margin-top: 5px;
+}
+
+/* Nieuwe stijlen voor de knoppen */
+.btn {
+  letter-spacing: 1px;
+  background-color: #00300b;
+  font-weight: 600;
+  color: #fff;
+  padding: 10px 15px; /* Aangepaste padding voor de knoppen */
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+  opacity: 1;
+}
+
+.btn:hover,
+.delete-btn:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.btn:active,
+.delete-btn:active {
+  transform: scaleX(0.99) scaleY(0.99);
+}
+
+.delete-btn,
+.save-btn {
+  position: absolute;
+  right: 64px;
+  letter-spacing: 1px;
+  background-color: #00300b;
+  font-weight: 600;
+  color: #fff;
+  padding: 10px 15px; /* Aangepaste padding voor de knoppen */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  opacity: 1;
+  margin-top: 4px;
+}
+
+.delete-btn {
+  position: absolute;
+  right: 260px !important;
+}
+
+/* Nieuwe stijlen voor de popup overlay */
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+}
+
+.camera-popup {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.close-popup {
+  position: relative;
+  cursor: pointer;
+  left: 500px;
+  bottom: 280px;
+  z-index: 999;
+}
+
+.navbar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  overflow: hidden;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  button {
+    background: rgb(32, 97, 26);
+    padding: 8px 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    color: white;
+    margin-left: 10px;
+    border: none;
+  }
+}
+
+.navbar a {
+  float: left;
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.navbar .nav-btn:hover {
+  background: #0e471b;
+  cursor: pointer;
+}
+
+.navbar .icon {
+  display: none;
+  cursor: pointer;
+  float: right;
+  padding: 15px;
+}
+
+@media screen and (max-width: 600px) {
+  .navbar .nav-btn:not(:first-child) {
+    display: none;
+  }
+  .navbar .nav-btn.icon {
+    float: right;
+    display: block;
+  }
+}
+
+.navbar {
+  button {
+    background: rgb(32, 97, 26);
+  }
+}
+
+.success-create-message {
+  display: none;
+  height: 7rem;
+  line-height: 7rem;
+  background-color: #ccc;
+  width: 300px;
+  border: 2px solid #010101;
+  border-radius: 5px;
+  color: #010101;
+  z-index: 999;
+  position: fixed;
+  right: 50px;
+  bottom: 0 !important;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.success-create-message,
+.success-create-message span {
+  animation-duration: 0.8s;
+  animation-fill-mode: both;
+}
+
+.fadeInBottom {
+  animation-name: fadeInBottom;
+}
+
+/* fade in animation */
+@keyframes fadeInBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fadeOutBottom {
+  animation-name: fadeOutBottom;
+}
+
+/* fade out success create account message animation */
+@keyframes fadeOutBottom {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+#reminder-card-error-div {
+  text-align: center;
+}

@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="nl" translate="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mijn plant</title>
+  <!-- <link rel="stylesheet" href="css/styles.css"> -->
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: #f4f4f4;
+      color: #000000;
+      margin: 0;
+      padding: 0;
+    }
+    
+    header {
+      background-color: #00300B;
+      padding: 10px;
+      text-align: center;
+      color: white;
+    }
+    
+    main {
+      padding: 20px;
+    }
+    
+    .plant-card {
+      border: 1px solid #000000;
+      padding: 50px;
+      margin-bottom: 20px;
+    }
+    
+    .plant-image {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    .plant-details {
+      margin-top: 10px;
+    }
+    
+    .timeline {
+      display: flex;
+      overflow-x: auto;
+    }
+    
+    .timeline img {
+      max-width: 150px;
+      max-height: 150px;
+      margin-right: 10px;
+    }
+    
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-top: 10px;
+    }
+    
+    .navigation-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      overflow: auto;
+    }
+    
+    .reminder-card {
+      border: 1px solid #000000;
+      padding: 10px;
+      margin-bottom: 20px;
+      margin-top: 20px;
+    }
+    
+    .plant-list {
+      display: flex;
+      overflow-x: auto;
+    }
+    
+    .plant-item {
+      border: 1px solid #000000;
+      padding: 10px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    
+    .plant-item:hover {
+      background-color: #f0f0f0;
+    }
+    
+    .photo-timeline-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    .photo-timeline-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .photo-timeline-item img {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    .photo-date {
+      margin-top: 5px;
+    }
+    
+    /* Nieuwe stijlen voor de knoppen */
+    .btn {
+      letter-spacing: 1px;
+      background-color: #00300B;
+      font-weight: 600;
+      color: #fff;
+      padding: 10px 15px; /* Aangepaste padding voor de knoppen */
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+      opacity: 1;
+    }
+    
+    .btn:hover, .delete-btn:hover {
+      opacity: 0.8;
+      cursor: pointer;
+    }
+    
+    .btn:active, .delete-btn:active {
+      transform: scaleX(0.99) scaleY(0.99);
+    }
+    
+    .delete-btn, .save-btn  {
+      position: absolute;
+      right: 64px;
+      letter-spacing: 1px;
+      background-color: #00300B;
+      font-weight: 600;
+      color: #fff;
+      padding: 10px 15px; /* Aangepaste padding voor de knoppen */
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      opacity: 1;
+      margin-top: 4px;
+    }
+    
+    .delete-btn {
+      position: absolute;
+      right: 260px !important;
+    }
+
+      /* Nieuwe stijlen voor de popup overlay */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .camera-popup {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .close-popup {
+      position: relative;
+      cursor: pointer;
+      left: 500px;
+      bottom: 280px;
+      z-index: 999;
+    }
+    
+    .navbar {
+      position: absolute;
+      top: 0;
+      right: 0;
+      overflow: hidden;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      z-index: 1000;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+
+      button {
+        background: rgb(32, 97, 26);
+        padding: 8px 15px;
+        font-size: 16px;
+        border-radius: 5px;
+        color: white;
+        margin-left: 10px;
+        border: none;
+      }
+    }
+
+    .navbar a {
+      float: left;
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    .navbar .nav-btn:hover {
+      background: #0e471b;
+      cursor: pointer;
+    }
+
+    .navbar .icon {
+      display: none;
+      cursor: pointer;
+      float: right;
+      padding: 15px;
+    }
+
+    @media screen and (max-width: 600px) {
+      .navbar .nav-btn:not(:first-child) {display: none;}
+      .navbar .nav-btn.icon {
+        float: right;
+        display: block;
+      }
+    }
+
+    .navbar {
+      button {
+        background: rgb(32, 97, 26);
+      }
+    }
+    
+    .success-create-message {
+      display: none;
+      height: 7rem;
+      line-height: 7rem;
+      background-color: #ccc;
+      width: 300px;
+      border: 2px solid #010101;
+      border-radius: 5px;
+      color: #010101;
+      z-index: 999;
+      position: fixed;
+      right: 50px;
+      bottom: 0 !important;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .success-create-message, .success-create-message span {
+      animation-duration: 0.8s;
+      animation-fill-mode: both;
+    }
+    
+    .fadeInBottom { animation-name: fadeInBottom }
+    
+    /* fade in animation */
+    @keyframes fadeInBottom {
+      from {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+      to { opacity: 1 }
+    }
+    
+    .fadeOutBottom { animation-name: fadeOutBottom; }
+    
+    /* fade out success create account message animation */
+    @keyframes fadeOutBottom {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+    }
+    
+    #reminder-card-error-div {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+  <h1>Mijn plant</h1>
+  </header>
+  <main>
+    <div class="navbar">
+      <button class="nav-btn" onclick="redirectTo('/my_plants/index.html')">Mijn plant</button>
+      <button class="nav-btn" onclick="redirectTo('/search_plant/index.html')">Zoek plant</button>
+      <button class="nav-btn" onclick="redirectTo('/agenda/index.html')">Kalender</button>
+      <button class="nav-btn" onclick="redirectTo('/community_page/index.html')">Community</button>
+      <button class="nav-btn" onclick="logout()">Logout</button>
+    </div>
+    
+    <div class="plant-list" id="plantList">
+      <!-- Hier worden de planten weergegeven -->
+    </div>
+    
+    <div class="plant-card" id="plantCard">
+      <!-- Inhoud van de plantenkaart komt hier -->
+      <div class="timeline" id="plantTimeline"></div>
+    </div>
+    
+    <div class="navigation-buttons">
+      <button class="btn" onclick="loadPreviousPlant()">&lt; Vorige Plant</button>
+      <button class="btn" onclick="loadNextPlant()">Volgende Plant &gt;</button>
+    </div>
+    
+    <div class="reminder-card">
+      <h2 class="photo-timeline-title">Foto Tijdlijn</h2>
+      <div id="photoTimeline" class="timeline"></div>
+      <div id="photoThumbnails" class="timeline"></div>
+      <div id="reminder-card-error-div"></div>
+    </div>
+    
+    <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileUpload(this, currentPlantIndex)">
+    <button class="btn" onclick="document.getElementById('fileInput').click(); updatedUserData()">Voeg Foto Toe</button>
+    <!-- <button class="btn upload-photo-button" onclick="openCameraPopup()">Maak Foto</button> -->
+    
+    <div class="overlay" id="cameraOverlay">
+      <div class="camera-popup">
+        <span class="close-popup" onclick="closeCameraPopup()">X</span>
+        <video id="cameraVideo" style="width: 100%; max-width: 400px;"></video>
+        <button class="btn" onclick="capturePhoto()">Maak Foto</button>
+      </div>
+    </div>
+    <div id="success-create-message" class="success-create-message fadeInBottom"></div>
+  </main>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+  <script>
+    let socket = io('/');
+    socket.on('connect', () => {
+      console.log('Connected plant to socket.io');
+      
+      socket.on("disconnect", function () {
+        console.log("A user disconnected");
+      });
+    });
+    
+    let plantData;
+    
+    let currentPlantIndex = 0;
+    let cameraActive = false; // Variabele om bij te houden of de camera actief is
+    const uploadedFiles = [];
+
+    const storedToken = getCookie("your_token_cookie");
+    
+    //document onload get the userdata & check for token with getUserData()
+    document.addEventListener("DOMContentLoaded", async function () {
+      try {
+        const data = await getUserData();
+        const userData = data.user;
+        const updatedUserData = await getUserDataFromMongoDB(userData.id);
+        console.log("updated user data", updatedUserData);
+        
+        const plantDataArray = updatedUserData.plantData;
+        
+        //maps/loops through every plant and displays it as plant name
+        plantData = plantDataArray.map((plant) => ({
+          plant: plant.plantName,
+          species: plant.species,
+          image: plant.plantImages,
+          progressImages: plant.progressImages,
+          extraInfo: plant.extraInfo
+        }));
+        
+        function selectPlant(index) {
+          currentPlantIndex = index;
+          loadPlantList();
+          loadPlantData();
+        }
+        
+        loadPlantList();
+        loadPlantData();
+        
+      } catch (error) {
+        console.error("Error initializing user data:", error);
+      }
+    });
+    
+    async function getUserDataFromMongoDB(userId) {
+      try {
+        const response = await fetch(`http://localhost:3002/api/get-user/${userId}`);
+        const data = await response.json();
+        return data.user;
+      } catch (error) {
+        console.error("Error fetching user data from MongoDB:", error);
+        return null;
+      }
+    }
+    
+    //#region Code to verify user and get the userData
+    async function getUserData() {
+      const storedToken = getCookie("your_token_cookie");
+      if (storedToken) {
+        try {
+          // Send a request to the server to verify the token and get user data
+          const response = await fetch('http://localhost:3001/api/protected-route', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${storedToken}`,
+            },
+          })
+          
+          if (response.ok) {
+            const data = await response.json();
+            
+            return data;
+          } else {
+            console.error('Error verifying token:', response.statusText);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error.message);
+        }
+      } else {
+        console.error('No token available');
+        window.location.href = '/error_page/index.html';
+      }
+      return null;
+    }
+    
+    function redirectTo(url) {
+      window.location.href = url;
+    }
+    
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    }
+    
+    async function loadPlantData() {
+      try {
+        const data = await getUserData();
+        const userData = data.user;
+        // fetch the latest user data before loading the next plant
+        const updatedUserData = await getUserDataFromMongoDB(userData.id);
+        console.log("updated user data prevrious: ", updatedUserData);
+        
+        const plantData = updatedUserData.plantData;
+        const plantCard = document.getElementById("plantCard");
+        const plantTimeline = document.getElementById("plantTimeline");
+        const photoTimeline = document.getElementById("photoTimeline");
+        const photoThumbnails = document.getElementById("photoThumbnails");
+        
+        const currentPlant = plantData[currentPlantIndex];
+        console.log("currentplant plantimages log: ", currentPlant.plantImages);
+        plantCard.innerHTML = `
+          <img src="${currentPlant.plantImages}" alt="${currentPlant.plantName}" class="plant-image">
+          <div class="plant-details">
+            <h2>${currentPlant.plantName}</h2>
+            <p>Plantensoort: ${currentPlant.species}</p>
+            <textarea id="infoTextarea" placeholder="Extra informatie van gebruiker...">${currentPlant.extraInfo}</textarea>
+            <button class="delete-btn" onclick="deletePlant(currentPlantIndex)">Verwijder Plant</button>
+            <button class="save-btn" onClick="saveInfo(currentPlantIndex)">Informatie Opslaan</button>
+          </div>
+        `;
+        
+        const currentDate = new Date().toLocaleString();
+        
+        photoTimeline.innerHTML = currentPlant.progressImages.map((progressImage, imageIndex) => `
+          <div class="photo-timeline-item">
+            <img src="../images/${progressImage.progressImageUrl}" alt="${currentPlant.plantName}" class="timeline-image">
+            <span class="photo-date">${currentDate}</span>
+            <button class="delete-timelinePhoto-Btn" onclick="deleteTimelinePlant(currentPlantIndex, ${imageIndex})">Verwijder Plant</button>
+          </div>
+        `).join('');
+      } catch (error) {
+      console.error("hihi:");
+      }
+    }
+    
+    function selectPlant(index) {
+      currentPlantIndex = index;
+      loadPlantList();
+      loadPlantData();
+    }
+    
+    function loadPlantList() {
+      const plantList = document.getElementById("plantList");
+      
+      plantList.innerHTML = plantData.map((plant, index) => `
+      <div class="plant-item" onclick="selectPlant(${index})" style="font-weight: ${index === currentPlantIndex ? '700' : 'normal'}">
+          ${plant.plant}
+        </div>
+      `).join('');
+    }
+    
+    function loadPreviousPlant() {
+      currentPlantIndex = (currentPlantIndex - 1 + plantData.length) % plantData.length;
+      loadPlantList();
+      loadPlantData();
+    }
+    
+    function loadNextPlant() {
+      currentPlantIndex = (currentPlantIndex + 1) % plantData.length;
+      loadPlantList();
+      loadPlantData();
+    }
+    
+    async function updatedUserData() {
+      const data = await getUserData();
+        const userData = data.user;
+        const updatedUserData = await getUserDataFromMongoDB(userData.id);
+        const userId = updatedUserData._id;
+        
+        return userId;
+    }
+    
+    async function deletePlant(index) {
+      console.log(index);
+      // Check if the index is valid
+      if (index >= 0 && index < plantData.length) {
+        
+        const data = await getUserData();
+        const userData = data.user;
+        const updatedUserData = await getUserDataFromMongoDB(userData.id);
+        const userId = userData.id
+        fetch(`http://localhost:3002/api/delete-plant/${userId}/${index}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          plantData.splice(index, 1); // Remove the plant at the specified index
+          
+          if (currentPlantIndex >= plantData.length) {
+            currentPlantIndex = 0;
+          }
+          
+          loadPlantList();
+          loadPlantData();
+        })
+        .catch(error => {
+          console.error('Error deleting plant:', error);
+        });
+      } else {
+        console.error('Invalid index:', index);
+      }
+    }
+    
+    async function saveInfo(index) {
+      try {
+        const storedToken = getCookie("your_token_cookie");
+        const data = await getUserData();
+        const userData = data.user;
+        const updatedUserData = await getUserDataFromMongoDB(userData.id);
+        const userId = userData.id;
+        
+        console.log(userId);
+        const infoText = document.getElementById('infoTextarea').value;
+        console.log(typeof infoText);
+        //save infoText's value and send to server
+          const response = await fetch(`http://localhost:3002/api/add-info/${userId}/${index}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${storedToken}`,
+            },
+            
+            body: JSON.stringify({
+              infoText: infoText
+            }),
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Error adding plant to user data !response: ${response.status} ${response.statusText}`);
+          }
+          
+          const responseData = await response.json();
+          
+          if (response.ok) {
+            console.log('Plant added to user data successfully if statement');
+            const successMessage = document.getElementById('success-create-message');
+            
+            // Set display to 'block' when there is a success
+            successMessage.style.display = 'block';
+            successMessage.textContent = `Informatie successvol opgeslagen!`;
+            
+            // Set position based on scroll
+            successMessage.style.bottom = `${window.innerHeight + window.scrollY}px`;
+            
+            setTimeout(() => {
+              // Remove the fade-in class to avoid conflicting animations
+              successMessage.classList.remove('fadeInBottom');
+              
+              // Hide the success message after the animation completes
+              setTimeout(() => {
+                successMessage.style.display = 'none';
+                successMessage.style.bottom = '0'; // Reset position to the bottom
+              }, 800);
+            }, 2000);
+          } else {
+            console.error('Error adding plant to user data if statement:', response.statusText);
+          }
+      } catch (error) {
+        console.error('Error saving extra info to user data:', error.message);
+      }
+    }
+    
+    function closeCameraPopup() {
+      const cameraOverlay = document.getElementById("cameraOverlay");
+      const video = document.getElementById("cameraVideo");
+      
+      cameraOverlay.style.display = "none";
+      
+      // Stop de video na het sluiten van de popup
+      const tracks = video.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+      video.srcObject = null;
+    }
+    
+    async function capturePhoto() {
+      const cameraOverlay = document.getElementById("cameraOverlay");
+      const video = document.getElementById("cameraVideo");
+      
+      // Stel de dimensies van het canvas in op de grootte van de video
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      const imageURL = canvas.toDataURL("image/png");
+      
+      // Voeg de foto toe aan de photoTimeline array met de huidige datum
+      const currentDate = new Date().toLocaleString();
+      plantData[currentPlantIndex].photoTimeline.unshift({
+        url: imageURL,
+        date: currentDate
+      });
+      
+      loadPlantData();
+      
+      // Stop de video en verwijder de elementen na het maken van de foto
+      const tracks = video.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+      video.srcObject = null;
+      
+      cameraOverlay.style.display = "none";
+    }
+    
+    function viewPhoto(index) {
+      // Voeg hier de logica toe om een specifieke foto in detail te bekijken
+      // Bijvoorbeeld, je kunt een modaal venster openen met de geselecteerde foto
+      console.log(`Viewing photo at index ${index}`);
+    }
+    
+    function openCameraPopup() {
+      const cameraOverlay = document.getElementById("cameraOverlay");
+      const video = document.getElementById("cameraVideo");
+        
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          video.srcObject = stream;
+          video.onloadedmetadata = () => {
+            video.play();
+          };
+          
+          cameraOverlay.style.display = "flex";
+        })
+        .catch((error) => {
+          console.error("Error accessing webcam: ", error);
+        });
+    }
+    
+    function handleFileUpload(input, currentPlantIndex) {
+      console.log(currentPlantIndex);
+      const fileInput = input;
+      const selectedFile = fileInput.files[0];
+      
+      if (selectedFile) {
+        const fileName = selectedFile.name;
+        console.log(fileName);
+        const imageURL = `/images/${fileName}`;
+        saveFileToImagesDirectory(selectedFile, fileName, currentPlantIndex);
+        // Voeg de foto toe aan de photoTimeline array met de huidige datum
+        const currentDate = new Date().toLocaleString();
+        const uploadedFile = {
+          imageURL: imageURL,
+          fileName: fileName,
+          date: currentDate
+        };
+        
+        uploadedFiles.push(uploadedFile);
+        loadPlantData();
+      }
+    }
+    
+    async function saveFileToImagesDirectory(file, fileName, plantIndex) {
+      
+      const data = await getUserData();
+      const userData = data.user;
+      const updatedUserData = await getUserDataFromMongoDB(userData.id);
+      
+      const userId = updatedUserData._id;
+      const formData = new FormData();
+      
+      formData.append('file', file, fileName);
+      formData.append('plantIndex', plantIndex);
+      
+      fetch(`http://localhost:3002/upload-image/${userId}`, {
+        method: 'POST',
+        body: formData,
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error uploading file');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('File uploaded successfully:', data);
+      })
+      .catch(error => {
+        const errorDiv = document.getElementById("reminder-card-error-div");
+        
+        errorDiv.innerHTML = 
+          `<h3>Kan geen foto aan tijdlijn toevoegen > geen planten beschikbaar</h3`
+            
+        console.error('Error:', error.message);
+      });
+    }
+    
+    async function deleteTimelinePlant(plantIndex, imageIndex) {
+      const data = await getUserData();
+      const userData = data.user;
+      const updatedUserData = await getUserDataFromMongoDB(userData.id);
+
+      const plantData = updatedUserData.plantData;
+
+      // Check if the plant index is valid
+      if (plantIndex >= 0 && plantIndex < plantData.length) {
+          const userId = userData.id;
+
+          // Check if the image index is valid
+          if (imageIndex >= 0 && imageIndex < plantData[plantIndex].progressImages.length) {
+              const imageIdToDelete = plantData[plantIndex].progressImages[imageIndex]._id;
+            
+              fetch(`http://localhost:3002/api/delete-image/${userId}/${plantIndex}/${imageIdToDelete}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+            })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+              })
+              .then(data => {
+                plantData[plantIndex].progressImages.splice(imageIndex, 1); // Remove the image at the specified index
+                
+                loadPlantList();
+                loadPlantData();
+              })
+              .catch(error => {
+                console.error('Error deleting image:', error);
+              });
+          } else {
+            console.error('Invalid image index:', imageIndex);
+          }
+      } else {
+        console.error('Invalid plant index:', plantIndex);
+      }
+    }
+    
+    async function logout() {
+      try {
+        const response = await fetch("http://localhost:3002/api/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        
+        if (response.ok) {
+          // Successful logout, redirect to login page
+          window.location.href = "/login_page/index.html";
+        } else {
+          const data = await response.json();
+          console.error(data.message);
+        }
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
+    }
+  </script>
+</body>
+</html>

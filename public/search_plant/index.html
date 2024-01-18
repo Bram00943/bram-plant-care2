@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoek plant</title>
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      color: #000000;
+    }
+
+    header {
+      background-color: #00300B;
+      color: white;
+      text-align: center;
+      padding: 10px;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    #search-form {
+      margin-bottom: 30px; /* Extra ruimte toegevoegd */
+    }
+
+    #plant-search-form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    label {
+      margin-right: 10px;
+    }
+
+    input[type="text"] {
+      padding: 8px;
+      font-size: 16px;
+      width: 250px; /* Maak het zoekveld wat breder */
+    }
+
+    button {
+      padding: 8px 15px;
+      font-size: 16px;
+      background-color: #00300B;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-left: 10px;
+    }
+
+    #search-results {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .result {
+      background-color: white;
+      border: 1px solid #ddd;
+      margin: 10px;
+      padding: 10px;
+      width: 200px;
+      border-radius: 5px;
+    }
+
+    .result img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .details {
+      text-align: center;
+    }
+
+    .add-button {
+      margin-top: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      background-color: #00300B;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .add-button:hover {
+      opacity: 0.8;
+    }
+
+    #recent-search-list li {
+      list-style: none;
+      margin-bottom: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #00300B;
+      transition: color 0.3s;
+    }
+
+    #recent-search-list li:hover {
+      opacity: 0.8;
+    }
+
+    .navbar {
+      position: absolute;
+      top: 0;
+      right: 0;
+      overflow: hidden;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      z-index: 1000;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+
+      button {
+        background: rgb(32, 97, 26);
+        padding: 8px 15px;
+        font-size: 16px;
+        border-radius: 5px;
+        color: white;
+        margin-left: 10px;
+        border: none;
+      }
+    }
+
+    .navbar a {
+      float: left;
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    .navbar .nav-btn:hover {
+      background-color: #055016;
+      cursor: pointer;
+    }
+
+    .navbar .icon {
+      display: none;
+      cursor: pointer;
+      float: right;
+      padding: 15px;
+    }
+
+    @media screen and (max-width: 600px) {
+      .navbar .nav-btn:not(:first-child) {display: none;}
+      .navbar .nav-btn.icon {
+        float: right;
+        display: block;
+      }
+    }
+
+    .navbar {
+      button {
+        background: rgb(32, 97, 26);
+      }
+    }
+    
+    .success-create-message {
+      display: none;
+      height: 7rem;
+      line-height: 7rem;
+      background-color: #ccc;
+      width: 500px;
+      border: 2px solid #010101;
+      border-radius: 5px;
+      color: #010101;
+      z-index: 999;
+      position: fixed;
+      right: 50px;
+      bottom: 0 !important;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    
+    .success-create-message, .success-create-message span {
+      animation-duration: 0.8s;
+      animation-fill-mode: both;
+    }
+    
+    .fadeInBottom { animation-name: fadeInBottom }
+    
+    /* fade in animation */
+    @keyframes fadeInBottom {
+      from {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+      to { opacity: 1 }
+    }
+    
+    .fadeOutBottom { animation-name: fadeOutBottom; }
+    
+    /* fade out success create account message animation */
+    @keyframes fadeOutBottom {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <button class="nav-btn" onclick="redirectTo('/my_plants/index.html')">Mijn plant</button>
+    <button class="nav-btn" onclick="redirectTo('/search_plant/index.html')">Zoek plant</button>
+    <button class="nav-btn" onclick="redirectTo('/agenda/index.html')">Kalender</button>
+    <button class="nav-btn" onclick="redirectTo('/community_page/index.html')">Community</button>
+    <button class="nav-btn" onclick="logout()">Logout</button>
+  </div>
+  
+  <header>
+    <h1>Zoek Plant</h1>
+  </header>
+  
+  <main>
+    <section id="search-form">
+      <form id="plant-search-form">
+        <label for="plant-name">Zoek een plant:</label>
+        <input type="text" id="plant-name" name="plantName" required autocomplete="off">
+        <button type="submit">Zoeken</button>
+      </form>
+    </section>
+
+    <section id="search-results">
+      <!-- Hier worden de zoekresultaten weergegeven -->
+    </section>
+
+    <section id="recent-searches">
+        <h2>Recent opgezocht</h2>
+        <ul id="recent-search-list">
+        <!-- Hier komen de recent opgezochte planten -->
+        </ul>
+    </section>
+    <div id="success-create-message" class="success-create-message fadeInBottom"></div>
+  </main>
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script>
+    const plantSearchForm = document.getElementById('plant-search-form');
+    const plantNameInput = document.getElementById('plant-name');
+    const searchResults = document.getElementById('search-results');
+    const recentSearchList = document.getElementById('recent-search-list');
+    let searchTimer;
+    
+    let userData;
+    
+    function redirectTo(url) {
+      window.location.href = url;
+    }
+    
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    }
+    const storedToken = getCookie("your_token_cookie");
+    
+    document.addEventListener("DOMContentLoaded", async function () {
+      try {
+        async function getUserData() {
+        const storedToken = getCookie("your_token_cookie");
+        if (storedToken) {
+          try {
+            // Send a request to the server to verify the token and get user data
+            const response = await fetch('http://localhost:3001/api/protected-route', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${storedToken}`,
+              },
+            })
+            
+            if (response.ok) {
+              const data = await response.json();
+              
+              return data;
+            } else {
+              console.error('Error verifying token:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Error fetching user data:', error.message);
+          }
+        } else {
+          console.error('No token available');
+          window.location.href = '/error_page/index.html';
+        }
+        return null;
+      }
+        // get old data from getUserData
+        const data = await getUserData();
+        userData = data.user;
+      } catch (error) {
+        console.error("Error initializing user data:", error);
+      }
+    });
+    
+    
+    plantSearchForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      searchPlants();
+    });
+    
+    plantNameInput.addEventListener('input', function () {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(searchPlants, 500); // Wacht 500 milliseconden (0.5 seconden) na de laatste input
+    });
+    
+    async function searchPlants() {
+      const plantName = plantNameInput.value;
+      // Voeg hier je Perenual API-key toe
+      const apiKey = 'sk-YAR1658170a3480393516';
+      
+      // Verwijder bestaande zoekresultaten als de zoekbalk leeg is
+      if (plantName.trim() === '') {
+        searchResults.innerHTML = '';
+        return;
+      }
+      
+      // Voer een fetch uit naar de Perenual API om planten te zoeken
+      fetch(`https://perenual.com/api/species-list?key=${apiKey}&q=${plantName}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Fout bij het ophalen van plantgegevens: ${response.status} ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+        // Verwijder bestaande zoekresultaten
+          searchResults.innerHTML = '';
+          
+          // Toon nieuwe zoekresultaten
+          data.data.forEach(plant => {
+            const resultElement = createResultElement(plant);
+            searchResults.appendChild(resultElement);
+          });
+          // Voeg de recente zoekopdracht toe aan de lijst na een vertraging
+          
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(() => {
+            addRecentSearch(plantName);
+          }, 3000); // Wacht 3000 milliseconden (3 seconden) voordat de recente zoekopdracht wordt toegevoegd
+        })
+        
+      function createResultElement(plant) {
+        try {
+          const resultElement = document.createElement('div');
+          resultElement.classList.add('result');
+          
+          // Controleer of de plant een afbeelding heeft
+          const imageUrl = plant.default_image ? plant.default_image.thumbnail : 'https://st.depositphotos.com/2934765/53192/v/450/depositphotos_531920820-stock-illustration-photo-available-vector-icon-default.jpg';
+          
+          resultElement.innerHTML = `
+            <img src="${imageUrl}" alt="${plant.common_name}">
+            <div class="details">
+              <h2>${plant.common_name}</h2>
+              <p>Soort: ${plant.scientific_name.join(', ')}</p>
+              <button class="add-button">Toevoegen aan Mijn Planten</button>
+            </div>
+          `;
+          
+          getUserData().then(data => {
+            const userData = data.user;
+
+            const addButton = resultElement.querySelector('.add-button');
+            addButton.addEventListener('click', async function() {
+              await addToUserPlants(plant, userData.id);
+            });
+          }).catch(error => {
+            console.error('Error in createResultElement:', error.message);
+          });
+          
+          return resultElement;
+          } catch (error) {
+          console.error('Error in createResultElement:', error.message);
+        }
+      }
+      
+      function addRecentSearch(plantName) {
+        const listItem = document.createElement('li');
+        listItem.textContent = plantName;
+        listItem.addEventListener('click', function() {
+          // Wanneer op een recente zoekopdracht wordt geklikt, vul de zoekbalk in met die plantnaam
+          plantNameInput.value = plantName;
+          // Voer meteen de zoekopdracht uit
+          searchPlants();
+        });
+        
+        // Voeg de klasse toe voor stijltoepassingen
+        listItem.classList.add('recent-search-item');
+        
+        // Voeg het item toe aan de lijst (houd de lijst beperkt tot bijv. 5 items)
+        recentSearchList.appendChild(listItem);
+        if (recentSearchList.children.length > 5) {
+          recentSearchList.removeChild(recentSearchList.firstChild);
+        }
+      }
+      
+      async function addToUserPlants(plant, userId) {
+        try {
+          const storedToken = getCookie("your_token_cookie");
+            const response = await fetch(`http://localhost:3002/api/add-plant/${userId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${storedToken}`,
+              },
+              
+              body: JSON.stringify({
+                imageUrl: plant.default_image ? plant.default_image.thumbnail : 'https://st.depositphotos.com/2934765/53192/v/450/depositphotos_531920820-stock-illustration-photo-available-vector-icon-default.jpg',
+                commonName: plant.common_name,
+                scientificName: plant.scientific_name.join(', '),
+              }),
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Error adding plant to user data !response: ${response.status} ${response.statusText}`);
+            }
+            
+            const responseData = await response.json();
+            
+            if (response.ok) {
+              console.log('Plant added to user data successfully if statement');
+              const successMessage = document.getElementById('success-create-message');
+              
+              // Set display to 'block' when there is a success
+              successMessage.style.display = 'block';
+              successMessage.textContent = `${plant.common_name} succesvol toegevoegd aan mijn planten!`;
+              
+              // Set position based on scroll
+              successMessage.style.bottom = `${window.innerHeight + window.scrollY}px`;
+              
+              setTimeout(() => {
+                // Remove the fade-in class to avoid conflicting animations
+                successMessage.classList.remove('fadeInBottom');
+                
+                // Hide the success message after the animation completes
+                setTimeout(() => {
+                  successMessage.style.display = 'none';
+                  successMessage.style.bottom = '0'; // Reset position to the bottom
+                }, 800);
+              }, 2000);
+            } else {
+              console.error('Error adding plant to user data if statement:', response.statusText);
+            }
+        } catch (error) {
+          console.error('Error adding plant to user data:', error.message);
+        }
+      }
+      
+      // Code to verify user and get the userData
+      async function getUserData() {
+        const storedToken = getCookie("your_token_cookie");
+        if (storedToken) {
+          try {
+            // Send a request to the server to verify the token and get user data
+            const response = await fetch('http://localhost:3001/api/protected-route', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${storedToken}`,
+              },
+            })
+            
+            if (response.ok) {
+              const data = await response.json();
+              
+              return data;
+            } else {
+              console.error('Error verifying token:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Error fetching user data:', error.message);
+          }
+        } else {
+          console.error('No token available');
+          window.location.href = '/error_page/index.html';
+        }
+        return null;
+      }
+    }
+    
+    async function logout() {
+      try {
+        const response = await fetch("http://localhost:3002/api/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        
+        if (response.ok) {
+          // Successful logout, redirect
+          window.location.href = "/login_page/index.html";
+        } else {
+          // Handle error response from the server
+          const data = await response.json();
+          console.error(data.message);
+        }
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
+    }
+  </script>
+</body>
+</html>

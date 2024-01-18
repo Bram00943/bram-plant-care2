@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactieve Weekkalender</title>
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    
+    table {
+      border-collapse: collapse;
+      width: 50%;
+      margin: 20px auto;
+    }
+    
+    header {
+      background-color: #00300B;
+      color: white;
+      text-align: center;
+      padding: 10px;
+    }
+    
+    th, td {
+      border: 1px solid #dddddd;
+      background-color: white;
+      text-align: center;
+      padding: 12px 0 12px 0;
+    }
+    
+    .button-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      width: 50%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .button-wrapper {
+      position: relative;
+
+      button {
+        letter-spacing: 1px;
+        background-color: #00300B;
+        font-weight: 600;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        opacity: 1;
+      }
+
+      button:hover {
+        opacity: 0.8;
+      }
+
+      button:active {
+        transform: scaleX(0.99) scaleY(0.99);
+      }
+    }
+    
+    .navbar {
+      position: absolute;
+      top: 0;
+      right: 0;
+      overflow: hidden;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      z-index: 1000;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+
+      button {
+        background: rgb(32, 97, 26);
+        padding: 8px 15px;
+        font-size: 16px;
+        border-radius: 5px;
+        color: white;
+        margin-left: 10px;
+        border: none;
+      }
+    }
+
+    .navbar a {
+      float: left;
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin: 0;
+    }
+
+    .navbar a:hover {
+      background-color: #055016;
+    }
+
+    .navbar button:hover {
+      background: #0e471b;
+      cursor: pointer;
+    }
+
+    .navbar {
+      button {
+        background: rgb(32, 97, 26);
+      }
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    
+    .close {
+      position: absolute;
+      top: 50%;
+      right: 5px;
+      font-size: 20px;
+      cursor: pointer;
+      transform: translateY(-50%);
+    }
+
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <button class="nav-btn" onclick="redirectTo('/my_plants/index.html')">Mijn plant</button>
+    <button class="nav-btn" onclick="redirectTo('/search_plant/index.html')">Zoek plant</button>
+    <button class="nav-btn" onclick="redirectTo('/agenda/index.html')">Kalender</button>
+    <button class="nav-btn" onclick="redirectTo('/community_page/index.html')">Community</button>
+    <button class="nav-btn" onclick="logout()">Logout</button>
+  </div>
+  
+  <header>
+    <h1 id="current-week">Weekkalender</h1>
+  </header>
+  
+  <div class="button-wrapper">
+    <div class="button-container">
+      <button onclick="previousWeek()">Vorige week</button>
+      <button onclick="nextWeek()">Volgende week</button>
+    </div>
+  </div>
+  
+  <table>
+    <thead>
+    <tr>
+      <th>Plants</th>
+      <th id="day-Monday"></th>
+      <th id="day-Tuesday"></th>
+      <th id="day-Wednesday"></th>
+      <th id="day-Thursday"></th>
+      <th id="day-Friday"></th>
+      <th id="day-Saturday"></th>
+      <th id="day-Sunday"></th>
+    </tr>
+    </thead>
+    <tbody id="calendar-body"></tbody>
+  </table>
+  
+  <div id="reminder-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <div id="watering-reminder">
+        <h3>Water geven</h3>
+      </div>
+      <div id="pruning-reminder">
+        <h3>Snoeien</h3>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const storedToken = getCookie("your_token_cookie");
+    let currentDate = new Date();
+    let currentWeek = getISOWeek(currentDate);
+    let calendarData;
+
+    const apiKey = "sk-Mj1D659e82d9cf3cd3734";
+    const perenualApiUrl = `https://perenual.com/api/species-list?key=${apiKey}&watering=average`;
+
+    
+    document.addEventListener("DOMContentLoaded", async function () {
+      try {
+        const data = await getUserData();
+        const userData = data.user;
+        const updatedUserData = await getUserDataFromMongoDB(userData.id);
+
+        // Voeg console.log toe om te controleren of de gebruikersgegevens correct zijn opgehaald
+        console.log("User data:", userData);
+
+        // Voeg console.log toe om te controleren of de bijgewerkte gebruikersgegevens correct zijn opgehaald
+        console.log("Updated user data:", updatedUserData);
+
+        const plantDataArray = updatedUserData.plantData;
+
+        // Voeg console.log toe om de plantDataArray te controleren
+        console.log("Plant data array:", plantDataArray);
+
+        // maps/loops through every plant and displays it as plant name
+        calendarData = await Promise.all(plantDataArray.map(async (plant) => {
+          const plantInformation = await getPlantInformation(plant.plantName);
+          return {
+            plant: plant.plantName,
+            water: plantInformation ? plantInformation.watering : "",
+            snoeien: plantInformation ? plantInformation.pruning : "",
+          };
+        }));
+
+        // Voeg console.log toe om te controleren of de kalendergegevens correct zijn opgehaald
+        console.log("Calendar data:", calendarData);
+
+        function fillTodayReminders() {
+          let today = new Date();
+          let todayIndex = today.getDay() - 1 + (currentWeek - 1) * 7;
+
+          let wateringReminderContainer = document.getElementById("watering-reminder");
+          let pruningReminderContainer = document.getElementById("pruning-reminder");
+
+          // Clear the current content of the reminder containers
+          wateringReminderContainer.innerHTML = "";
+          pruningReminderContainer.innerHTML = "";
+
+          // Fill the reminders for today based on the watering and pruning pattern of each plant
+          let remindersExist = false;
+
+          calendarData.forEach(function (item) {
+            const wateringText = getWateringText(item.water, todayIndex);
+            const pruningText = getPruningText(item.snoeien, todayIndex);
+
+            if (wateringText !== "") {
+              let wateringReminderElement = document.createElement("div");
+              wateringReminderElement.innerText = `${item.plant}: ${wateringText}`;
+              wateringReminderContainer.appendChild(wateringReminderElement);
+              remindersExist = true;
+            }
+
+            if (pruningText !== "") {
+              let pruningReminderElement = document.createElement("div");
+              pruningReminderElement.innerText = `${item.plant}: ${pruningText}`;
+              pruningReminderContainer.appendChild(pruningReminderElement);
+              remindersExist = true;
+            }
+          });
+
+          // Open the modal (popup) if there are reminders, otherwise show a message
+          if (remindersExist) {
+            openModal();
+          } else {
+            let noRemindersElement = document.createElement("div");
+            noRemindersElement.innerText = "Je hebt geen reminders voor vandaag!";
+            wateringReminderContainer.appendChild(noRemindersElement);
+            openModal();
+          }
+        }
+      } catch (error) {
+        console.error("Error initializing user data:", error);
+      }
+      
+      async function fillWateringDays() {
+        let daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        let calendarBody = document.getElementById("calendar-body");
+
+        // Leeg de huidige inhoud van de kalender
+        calendarBody.innerHTML = "";
+
+        // Vul de dagen in de tabel met de datum
+        daysOfWeek.forEach(function (day, index) {
+          let dayElement = document.getElementById("day-" + day);
+          dayElement.innerText = getFormattedDate(currentDate, index);
+        });
+
+        // Voeg een rij toe voor elke plant
+        await Promise.all(calendarData.map(async function (item) {
+          let row = document.createElement("tr");
+          row.innerHTML = `<td>${item.plant}</td>`;
+
+          // Vul de dagen in op basis van het water- en snoeipatroon van elke plant
+          for (let i = 0; i < daysOfWeek.length; i++) {
+            const wateringText = getWateringText(item.water, i + (currentWeek - 1) * 7);
+            const pruningText = getPruningText(item.snoeien, i + (currentWeek - 1) * 7);
+
+            console.log(`Plant: ${item.plant}, Day: ${daysOfWeek[i]}, Watering Text: ${wateringText}, Pruning Text: ${pruningText}`);
+
+            row.innerHTML += `<td>${wateringText}<br>${pruningText}</td>`;
+          }
+
+          // Voeg de rij toe aan de kalender
+          calendarBody.appendChild(row);
+        }));
+
+        // Update de kop van de weekkalender met de huidige week
+        document.getElementById("current-week").innerText = `Weekkalender - Week ${currentWeek}`;
+      }
+      
+      fillWateringDays();
+      fillTodayReminders();
+    });
+    
+    async function getUserDataFromMongoDB(userId) {
+      try {
+        const response = await fetch(`http://localhost:3002/api/get-user/${userId}`);
+        const data = await response.json();
+        return data.user;
+      } catch (error) {
+        console.error("Error fetching user data from MongoDB:", error);
+        return null;
+      }
+    }
+    
+    //#region Code to verify user and get the userData
+    async function getUserData() {
+      const storedToken = getCookie("your_token_cookie");
+      if (storedToken) {
+        try {
+          // Send a request to the server to verify the token and get user data
+          const response = await fetch('http://localhost:3001/api/protected-route', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${storedToken}`,
+            },
+          })
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log("getUserData() data : ", data);
+            
+            return data;
+          } else {
+            console.error('Error verifying token:', response.statusText);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error.message);
+        }
+      } else {
+        console.error('No token available');
+        window.location.href = '/error_page/index.html';
+      }
+      return null;
+    }
+    
+    function getFormattedDate(date, offset) {
+      let daysOfWeek = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
+      let newDate = new Date(date);
+      newDate.setDate(date.getDate() + offset);
+      
+      let dayOfWeek = daysOfWeek[newDate.getDay()];
+      let formattedDate = newDate.toLocaleDateString();
+      
+      return `${dayOfWeek}
+      ${formattedDate}`;
+    }
+    
+    function updateCalendar() {
+      // Leeg de huidige inhoud van de tabel
+      document.getElementById("calendar-body").innerHTML = "";
+      
+      // Vul de kalender met nieuwe gegevens voor de huidige week
+      fillWateringDays();
+    }
+    
+    function previousWeek() {
+      currentDate.setDate(currentDate.getDate() - 7);
+      currentWeek = getISOWeek(currentDate);
+      updateCalendar();
+    }
+    
+    function nextWeek() {
+      currentDate.setDate(currentDate.getDate() + 7);
+      currentWeek = getISOWeek(currentDate);
+      updateCalendar();
+    }
+    
+    // Functie om de ISO week op te halen
+    function getISOWeek(date) {
+      let d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+      let yearStart = new Date(d.getFullYear(), 0, 1);
+      return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+    
+    // Functie om de tekst voor water geven te bepalen op basis van het patroon
+    function getWateringText(wateringPattern, dayIndex) {
+      if (wateringPattern === "frequent") {
+        return (dayIndex % 2 === 0) ? "Water geven" : "";
+      } else if (wateringPattern === "average") {
+        return (dayIndex % 4 === 0) ? "Water geven" : "";
+      } else if (wateringPattern === "minimum") {
+        return (dayIndex % 8 === 0) ? "Water geven" : "";
+      } else if (wateringPattern === "none") {
+        return (dayIndex % 0 === 0) ? "" : "";
+      }
+      return "";
+    }
+    
+    // Functie om de tekst voor snoeien te bepalen op basis van het patroon
+    function getPruningText(pruningPattern, dayIndex) {
+      if (pruningPattern === "frequent") {
+        return (dayIndex % 12 === 0) ? "Snoeien" : "";
+      } else if (pruningPattern === "average") {
+        return (dayIndex % 24 === 0) ? "Snoeien" : "";
+      } else if (pruningPattern === "minimum") {
+        return (dayIndex % 36 === 0) ? "Snoeien" : "";
+      } else if (pruningPattern === "none") {
+        return (dayIndex % 0 === 0) ? "Snoeien" : "";
+      }
+      return "";
+    }
+    
+    function openModal() {
+      document.getElementById("reminder-modal").style.display = "block";
+    }
+    
+    function closeModal() {
+      document.getElementById("reminder-modal").style.display = "none";
+    }
+    
+    
+    // Roep de functie aan om de herinneringen voor vandaag te vullen wanneer de pagina wordt geladen
+    window.onload = function () {
+
+    };
+    
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    }
+    
+    function redirectTo(url) {
+      window.location.href = url;
+    }
+
+    
+    async function getPlantInformation(plantName) {
+      try {
+        const response = await fetch(`${perenualApiUrl}&name=${plantName}`);
+        const responseData = await response.json();
+
+        // Controleer de console om de structuur van de ontvangen data te begrijpen
+        console.log("Plant information for", plantName, ":", responseData);
+
+        // Verkrijg de specifieke plantinformatie (bijvoorbeeld de eerste plant in de array)
+        const plantInfo = responseData.data.length > 0 ? responseData.data[0] : null;
+
+        // Controleer of de snoeiinformatie beschikbaar is, zo niet, gebruik een standaardwaarde
+        const pruningInfo = plantInfo ? plantInfo.pruning : "none";
+
+        // Retourneer de specifieke plantinformatie inclusief snoeiinformatie
+        return { ...plantInfo, pruning: pruningInfo };
+      } catch (error) {
+        console.error("Error fetching plant information:", error);
+        return null;
+      }
+    }
+
+    // Functie om de tekst voor water geven te bepalen op basis van het patroon
+    function getWateringText(wateringPattern, dayIndex) {
+      if (wateringPattern === "Frequent") {
+        return "Water geven";
+      } else if (wateringPattern === "Average") {
+        // Weergeef "Water geven" op elke tweede dag van de week
+        return (dayIndex % 2 === 1) ? "Water geven" : "";
+      } else if (wateringPattern === "Minimum") {
+        // Weergeef "Water geven" op elke vierde dag van de week
+        return (dayIndex % 4 === 3) ? "Water geven" : "";
+      } else if (wateringPattern === "None") {
+        return "";
+      }
+      return "";
+    }
+
+    // Functie om de tekst voor snoeien te bepalen op basis van het patroon
+    function getPruningText(pruningPattern, dayIndex) {
+      if (pruningPattern === "Frequent") {
+        return "Snoeien";
+      } else if (pruningPattern === "Average") {
+        // Weergeef "Snoeien" op elke derde dag van de week
+        return (dayIndex % 3 === 2) ? "Snoeien" : "";
+      } else if (pruningPattern === "Minimum") {
+        // Weergeef "Snoeien" op elke zesde dag van de week
+        return (dayIndex % 6 === 5) ? "Snoeien" : "";
+      } else if (pruningPattern === "None") {
+        return "";
+      }
+      return "";
+    }
+
+  </script>
+</body>
+</html>

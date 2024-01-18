@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoek plant</title>
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      color: #000000;
+    }
+
+    header {
+      background-color: #00300B;
+      color: white;
+      text-align: center;
+      padding: 10px;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    #search-form {
+      margin-bottom: 30px; /* Extra ruimte toegevoegd */
+    }
+
+    #plant-search-form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    label {
+      margin-right: 10px;
+    }
+
+    input[type="text"] {
+      padding: 8px;
+      font-size: 16px;
+      width: 250px; /* Maak het zoekveld wat breder */
+    }
+
+    button {
+      padding: 8px 15px;
+      font-size: 16px;
+      background-color: #00300B;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-left: 10px;
+    }
+
+    #search-results {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .result {
+      background-color: white;
+      border: 1px solid #ddd;
+      margin: 10px;
+      padding: 10px;
+      width: 200px;
+      border-radius: 5px;
+    }
+
+    .result img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .details {
+      text-align: center;
+    }
+
+    .add-button {
+      margin-top: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      background-color: #00300B;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .add-button:hover {
+      opacity: 0.8;
+    }
+
+    #recent-search-list li {
+      list-style: none;
+      margin-bottom: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #00300B;
+      transition: color 0.3s;
+    }
+
+    #recent-search-list li:hover {
+      opacity: 0.8;
+    }
+
+    .navbar {
+      position: absolute;
+      top: 0;
+      right: 0;
+      overflow: hidden;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      z-index: 1000;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+
+      button {
+        background: rgb(32, 97, 26);
+        padding: 8px 15px;
+        font-size: 16px;
+        border-radius: 5px;
+        color: white;
+        margin-left: 10px;
+        border: none;
+      }
+    }
+
+    .navbar a {
+      float: left;
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    .navbar .nav-btn:hover {
+      background-color: #055016;
+      cursor: pointer;
+    }
+
+    .navbar .icon {
+      display: none;
+      cursor: pointer;
+      float: right;
+      padding: 15px;
+    }
+
+    @media screen and (max-width: 600px) {
+      .navbar .nav-btn:not(:first-child) {display: none;}
+      .navbar .nav-btn.icon {
+        float: right;
+        display: block;
+      }
+    }
+
+    .navbar {
+      button {
+        background: rgb(32, 97, 26);
+      }
+    }
+    
+    .success-create-message {
+      display: none;
+      height: 7rem;
+      line-height: 7rem;
+      background-color: #ccc;
+      width: 500px;
+      border: 2px solid #010101;
+      border-radius: 5px;
+      color: #010101;
+      z-index: 999;
+      position: fixed;
+      right: 50px;
+      bottom: 0 !important;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    
+    .success-create-message, .success-create-message span {
+      animation-duration: 0.8s;
+      animation-fill-mode: both;
+    }
+    
+    .fadeInBottom { animation-name: fadeInBottom }
+    
+    /* fade in animation */
+    @keyframes fadeInBottom {
+      from {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+      to { opacity: 1 }
+    }
+    
+    .fadeOutBottom { animation-name: fadeOutBottom; }
+    
+    /* fade out success create account message animation */
+    @keyframes fadeOutBottom {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+    }
+    
+    .container {
+      border-radius: 50px;
+    }
+    
+    .topic-holder, .message-holder, .commu-message {
+      border-radius: 15px;
+      background-color: #f4f4f4;
+    }
+    
+    .container {
+      position: relative;
+      top: 20px;
+      margin: auto;
+      width: 50%;
+      padding: 10px;
+      width: 1250px;
+      height: 600px;
+      background-color: #00300B;
+    }
+    
+    .topic-holder {
+      position: relative;
+      left: 35px;
+      width: 160px;
+      height: 500px;
+      top: 49px;
+    }
+    
+    .topic {
+      position: relative;
+      top: 20px;
+      left: 30px;
+      width: 100px;
+      height: 50px;
+      background-color: #ccc !important;
+      text-align: center;
+      line-height: 50px;
+      border-radius: 5px;
+    }
+    
+    .topic:hover {
+      cursor: pointer;
+      background-color: #aeaeae !important;
+    }
+    
+    .message-holder {
+      position: relative;
+      left: 95px !important;
+      margin: auto;
+      width: 75%;
+      padding: 10px;
+      height: 480px;
+      bottom: 450px;
+      overflow-y: auto;
+    }
+    
+    .commu-message {
+      position: relative;
+      margin: auto;
+      width: 80%;
+      padding: 10px;
+      min-height: 50px;
+      background-color: #ccc;
+      color: #010101;
+      line-height: 50px;
+      font-weight: 600;
+      margin-top: 10px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .message-input-field {
+      position:sticky;
+      bottom: 10px !important;
+    }
+    
+    .message-input[type="text"] {
+      position: relative;
+      left: 82px;
+      width: 600px;
+      word-wrap: break-word;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+    
+    .send-btn {
+      position: relative;
+      left: 82px;
+      width: 135px;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    .chat-container {
+      display: none;
+      margin-top: 20px;
+    }
+    
+    .toggle-chat {
+      position: relative;
+      left: 31px;
+      top: 60px;
+      color: #010101;
+      margin-top: 10px;
+      background-color: #ccc !important;
+    }
+    
+    .toggle-chat:hover {
+      background-color: #aeaeae !important;
+    }
+    
+    .form {
+      position:sticky;
+      bottom: 0px !important;
+    }
+    
+    .chat-topic {
+      text-align: center;
+    }
+    
+    .ul > div {
+      font-size: 18px;
+      position: relative;
+      left: 82px;
+      width: 600px;
+      height: 40px;
+      line-height: 40px;
+      word-wrap: break-word;
+      margin-top: 10px;
+      border-radius: 5px;
+      padding-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <button class="nav-btn" onclick="redirectTo('/my_plants/index.html')">Mijn plant</button>
+    <button class="nav-btn" onclick="redirectTo('/search_plant/index.html')">Zoek plant</button>
+    <button class="nav-btn" onclick="redirectTo('/agenda/index.html')">Kalender</button>
+    <button class="nav-btn" onclick="redirectTo('/community_page/index.html')">Community</button>
+    <button class="nav-btn" onclick="logout()">Logout</button>
+  </div>
+  
+  <header>
+    <h1>Community</h1>
+  </header>
+  <!-- <div class="container">
+    <div class="topic-holder">
+      <button onclick="setupChat('onderwerp 1')" class="topic" data-topic="onderwerp 1">
+        onderwerp 1
+      </button>
+      <button onclick="setupChat('onderwerp 2')" style="margin-top: 20px;" class="topic" data-topic="onderwerp 2">
+        onderwerp 2
+      </button>
+    </div>
+    <div class="message-holder" id="chat-container" style="display: none;">
+      <div id="message-container"></div>
+      <div class="message-input-field">
+        <input class="message-input" type="text" placeholder="Stuur bericht" id="message-input">
+        <button onclick="sendMessage()" class="send-btn">Verzend</button>
+      </div>
+    </div>
+  </div> -->
+  <div class="container">
+    <div class="topic-holder">
+      <button class="toggle-chat" data-chat-id="1">Chat 1</button>
+      <button class="toggle-chat" data-chat-id="2">Chat 2</button>
+      <button class="toggle-chat" data-chat-id="3">Chat 3</button>
+      <button class="toggle-chat" data-chat-id="4">Chat 4</button>
+      <button class="toggle-chat" data-chat-id="5">Chat 5</button>
+      <button class="toggle-chat" data-chat-id="6">Chat 6</button>
+    </div>
+    <div class="message-holder" id="chat-container">
+      
+      <div class="chat-container" id="chat-container1">
+        <h1 class="chat-topic">Chat 1</h1>
+        <ul class="ul" id="messages1"></ul>
+        <form class="form" id="form1" action="">
+          <input class="message-input" type="text" placeholder="Stuur bericht" id="m1" autocomplete="off" /><button class="send-btn">Send</button>
+        </form>
+      </div>
+      
+      <div class="chat-container" id="chat-container2">
+        <h1 class="chat-topic">Chat 2</h1>
+        <ul class="ul" id="messages2"></ul>
+        <form class="form" id="form2" action="">
+          <input class="message-input" type="text" placeholder="Stuur bericht" id="m2" autocomplete="off" /><button class="send-btn">Send</button>
+        </form>
+      </div>
+      
+      <div class="chat-container" id="chat-container3">
+        <h1 class="chat-topic">Chat 3</h1>
+        <ul class="ul" id="messages3"></ul>
+        <form class="form" id="form3" action="">
+          <input class="message-input" type="text" placeholder="Stuur bericht" id="m3" autocomplete="off" /><button class="send-btn">Send</button>
+        </form>
+      </div>
+      
+      <div class="chat-container" id="chat-container4">
+        <h1 class="chat-topic">Chat 4</h1>
+        <ul class="ul" id="messages4"></ul>
+        <form class="form" id="form4" action="">
+          <input class="message-input" type="text" placeholder="Stuur bericht" id="m4" autocomplete="off" /><button class="send-btn">Send</button>
+        </form>
+      </div>
+      
+      <div class="chat-container" id="chat-container5">
+        <h1 class="chat-topic">Chat 5</h1>
+        <ul class="ul" id="messages5"></ul>
+        <form class="form" id="form5" action="">
+          <input class="message-input" type="text" placeholder="Stuur bericht" id="m5" autocomplete="off" /><button class="send-btn">Send</button>
+        </form>
+      </div>
+      
+      <div class="chat-container" id="chat-container6">
+        <h1 class="chat-topic">Chat 6</h1>
+        <ul class="ul" id="messages6"></ul>
+        <form class="form" id="form6" action="">
+          <input class="message-input" type="text" placeholder="Stuur bericht" id="m6" autocomplete="off" /><button class="send-btn">Send</button>
+        </form>
+      </div>
+      
+      <div class="chat-container" id="chat-container7">
+        <h1 class="chat-topic">Chat 7</h1>
+        <ul class="ul" id="messages7"></ul>
+        <form class="form" id="form7" action="">
+          <input class="message-input" type="text" placeholder="Stuur bericht" id="m7" autocomplete="off" /><button class="send-btn">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  
+  <main>
+    <div id="success-create-message" class="success-create-message fadeInBottom"></div>
+  </main>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script>
+    let socket = io('/');
+    socket.on('connect', () => {
+      console.log('Connected community to socket.io');
+      
+      socket.on("disconnect", function () {
+        console.log("A user disconnected");
+      });
+    });
+    
+    const plantSearchForm = document.getElementById('plant-search-form');
+    const plantNameInput = document.getElementById('plant-name');
+    const searchResults = document.getElementById('search-results');
+    const recentSearchList = document.getElementById('recent-search-list');
+    let searchTimer;
+    
+    let userData;
+    
+    function redirectTo(url) {
+      window.location.href = url;
+    }
+    
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    }
+    const storedToken = getCookie("your_token_cookie");
+    
+    document.addEventListener("DOMContentLoaded", async function () {
+      try {
+        async function getUserData() {
+          const storedToken = getCookie("your_token_cookie");
+          if (storedToken) {
+            try {
+              // Send a request to the server to verify the token and get user data
+              const response = await fetch('http://localhost:3001/api/protected-route', {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${storedToken}`,
+                },
+              })
+              
+              if (response.ok) {
+                const data = await response.json();
+                
+                return data;
+              } else {
+                console.error('Error verifying token:', response.statusText);
+              }
+            } catch (error) {
+              console.error('Error fetching user data:', error.message);
+            }
+          } else {
+            console.error('No token available');
+            window.location.href = '/error_page/index.html';
+          }
+          return null;
+        }
+        // get old data from getUserData
+        
+      } catch (error) {
+        console.error("Error initializing user data:", error);
+      }
+    });
+    
+    async function getUserData() {
+      const storedToken = getCookie("your_token_cookie");
+      if (storedToken) {
+        try {
+          // Send a request to the server to verify the token and get user data
+          const response = await fetch('http://localhost:3001/api/protected-route', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${storedToken}`,
+            },
+          })
+          
+          if (response.ok) {
+            const data = await response.json();
+            
+            return data;
+          } else {
+            console.error('Error verifying token:', response.statusText);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error.message);
+        }
+      } else {
+        console.error('No token available');
+        window.location.href = '/error_page/index.html';
+      }
+      return null;
+    }
+    
+    async function logout() {
+      try {
+        const response = await fetch("http://localhost:3002/api/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        
+        if (response.ok) {
+          // Successful logout, redirect or perform any other action
+          window.location.href = "/login_page/index.html"; // Redirect to the login page, for example
+        } else {
+          // Handle error response from the server
+          const data = await response.json();
+          console.error(data.message);
+        }
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
+    }
+    
+    $(document).ready(async () => {
+      const socket = io();
+      let userData = await getUserData();
+      
+      async function getUserData() {
+        const storedToken = getCookie("your_token_cookie");
+        if (storedToken) {
+          try {
+            // Send a request to the server to verify the token and get user data
+            const response = await fetch('http://localhost:3001/api/protected-route', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${storedToken}`,
+              },
+            })
+            
+            if (response.ok) {
+              const data = await response.json();
+              
+              return data;
+            } else {
+              console.error('Error verifying token:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Error fetching user data:', error.message);
+          }
+        } else {
+          console.error('No token available');
+          window.location.href = '/error_page/index.html';
+        }
+        return null;
+      }
+      
+      // Toggle chat containers button onclikc
+      $('.toggle-chat').click(function () {
+        // Get the chat ID from the clicked buttons data attribute
+        const chatId = $(this).data('chat-id');
+        
+        // Hide all chat containers except the one corresponding to the clicked button
+        $('.chat-container').not(`#chat-container${chatId}`).hide();
+        
+        // Toggle the visibility of the clicked chat container
+        $(`#chat-container${chatId}`).toggle();
+      });
+      
+      async function displayMessage(messageData, isCurrentUser) {
+        const datas = await getUserData();
+        userData = datas.user;
+        
+        const messageContainerId = `#messages${messageData.chat.substring(4)}`;
+        let messageText;
+        
+        if (isCurrentUser) {
+          messageText = `${messageData.msg} :You`;
+        } else {
+          messageText = `${messageData.username}: ${messageData.msg}`;
+        }
+        
+        const newMessage = $('<div>').text(messageText);
+        
+        newMessage.css({
+          backgroundColor: isCurrentUser ? '#b4b4b4' : '#ccc',
+          textAlign: isCurrentUser ? 'right' : 'left',
+          fontWeight: isCurrentUser ? '600' : 'normal',
+        });
+        
+        $(messageContainerId).append(newMessage);
+      }
+      
+      // Handle form submissions for all chat containers
+      for (let i = 1; i <= 7; i++) {
+        $(`#form${i}`).submit((e) => {
+          // preventDefault() method cancels the event if it is cancelable, meaning that the default action that belongs to the event will not occur.
+          e.preventDefault();
+          
+          // Get the message and chat ID from the form's input and button elements
+          const msg = $(`#m${i}`).val();
+          
+          // Check if the message is not empty
+          if (msg) {
+            // Emit a 'chat message' event to the server with the message and chat ID
+            console.log(userData);
+            socket.emit('chat message', { username: userData.username, msg, chat: `chat${i}` });
+            
+            // Clear the input field after sending the message
+            $(`#m${i}`).val('');
+          }
+        });
+      }
+      
+      socket.on('chat message', async (data) => {
+        console.log("Chat message userdata.id, data.userId: ", userData.id, ": ", data.username);
+        const datas = await getUserData();
+        userData = datas.user;
+        
+        const isCurrentUser = data.username === userData.username; // Compare data.username with userData.username
+        console.log("is current user chat message: ", isCurrentUser);
+        displayMessage({ ...data, username: userData.username }, isCurrentUser);
+      });
+      
+      // Handle incoming 'chat history' events from the server
+      socket.on('chat history', async (history) => {
+        const datas = await getUserData();
+        userData = datas.user;
+        history.forEach((data) => {
+          console.log("Chat history userdata.id, data.userId: ", userData.id, ": ", data.userId);
+          const isCurrentUser = data.username === userData.username;
+          displayMessage({ ...data, username: userData.username }, isCurrentUser);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="nl" translate="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@600;900&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/4b9ba14b0f.js" crossorigin="anonymous"></script>
+  <title>404 pagina</title>
+</head>
+<style>
+  body {
+    background-color: #f4f4f4;
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mainbox {
+    margin: 30px auto;
+    height: 600px;
+    width: 50%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .err {
+    color: #00300B;
+    font-size: 11rem;
+    position:absolute;
+    left: 20%;
+    top: 8%;
+  }
+
+  .far {
+    position: absolute;
+    font-size: 8.5rem;
+    left: 42%;
+    top: 15%;
+    color: #00300B;
+  }
+
+  .err2 {
+    color: #00300B;
+    font-size: 11rem;
+    position:absolute;
+    left: 68%;
+    top: 8%;
+  }
+
+  .msg {
+    color: #00300B;
+    text-align: center;
+    font-size: 1.6rem;
+    position:absolute;
+    top: 45%;
+  }
+
+  a {
+    text-decoration: none;
+    color: #00300B;
+    text-decoration: underline;
+  }
+  
+  button, input[type="submit"], input[type="reset"] {
+    background: none;
+    color: rgb(176, 0, 97);
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+  }
+  
+  button:hover {
+    color: rgb(237, 6, 133);
+  }
+</style>
+
+<body>
+<div class="mainbox">
+  <div class="err">4</div>
+  <i class="far fa-question-circle"></i>
+  <div class="err2">4</div>
+  <div class="msg">
+    <h2 >GEEN ACCOUNT / ONGEAUTORISEERD.</h2>
+    <p>Sorry, de pagina die u probeerde te bezoeken kan je alleen bezoeken als je een account hebt aangemaakt. Als u deze pagina toch wilt bezoeken kan u een <button onclick="toLogin()">account aanmaken</button>.</p>
+  </div>
+</div>
+<script>
+  function toLogin() {
+    window.location.href = '/login_page/index.html';
+  }
+</script>
+</body>
+</html>

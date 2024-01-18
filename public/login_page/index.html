@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="nl" translate="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login page</title>
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #F8F9FB;
+      overflow-x: hidden;
+      color: #F8F9FB;
+    }
+    
+    .container {
+      text-align: center;
+      background-color: #00300B;
+      width: 100%;
+      max-width: 700px;
+      margin: 20px;
+      padding: 60px;
+      position: absolute;
+      border-radius: 50px;
+    }
+    
+    .login {
+      position: relative;
+      right: 140px;
+      color: #010101;
+    }
+    
+    .password {
+      position: relative;
+      right: 120px;
+      color: #010101;
+    }
+    
+    .form {
+      text-align: center;
+    }
+    
+    .form-group {
+      padding: 20px;
+    }
+    
+    #loginForm, #passwordForm {
+      position: relative;
+      right: 45px;
+    }
+    
+    label {
+      color: #010101;
+      font-weight: 600;
+      position: relative;
+      bottom: 15px;
+      right: 165px;
+    }
+    
+    input {
+      border-radius: 8px;
+      height: 30px;
+      width: 500px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    
+    .form-container {
+      background-color: #F8F9FB;
+      padding: 60px;
+      border-radius: 20px;
+    }
+
+    .btn-container {
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box;
+    }
+    
+    .btn {
+      letter-spacing: 1px;
+      background-color: #00300B;
+      font-weight: 600;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      opacity: 1;
+      position: relative;
+      left: 45px;
+    }
+    
+    .btn:hover{
+      opacity: 0.8;
+    }
+    
+    .btn:active {
+      transform: scaleX(0.99) scaleY(0.99);
+    }
+    
+    .error-message {
+      margin-top: 10px;
+      color: #ff0000;
+      position: relative;
+      left: 45px;
+    }
+    
+    .success-create-message {
+      display: none;
+      height: 7rem;
+      line-height: 7rem;
+      background-color: #ccc;
+      width: 300px;
+      border: 2px solid #010101;
+      border-radius: 5px;
+      color: #010101;
+      z-index: 999;
+      position: absolute;
+      right: 50px;
+      bottom: 0;
+      text-align: center;
+    }
+    
+    .success-create-message, .success-create-message span {
+      animation-duration: 0.8s;
+      animation-fill-mode: both;
+    }
+    
+    .fadeInBottom { animation-name: fadeInBottom }
+    
+    /* fade in animation */
+    @keyframes fadeInBottom {
+      from {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+      to { opacity: 1 }
+    }
+    
+    .fadeOutBottom { animation-name: fadeOutBottom; }
+    
+    /* fade out success create account message animation */
+    @keyframes fadeOutBottom {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-container">
+      <!--create account form-->
+      <h1 class="login">Account aanmaken</h1>
+      <form method="POST" id="loginForm">
+        <div class="form-group">
+          <label for="username">Gebruikers naam:</label>
+          <input autocomplete="new-password" type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Wachtwoord:</label>
+          <input autocomplete="new-password" type="password" id="password" name="password" required>
+        </div>
+        <div class="btn-container">
+          <button class="btn" id="create-account-btn" onclick="createAccount()" type="button">Account aanmaken</button>
+        </div>
+        <div id="create-account-error-message" class="error-message"></div>
+      </form>
+      <!--login with account form-->
+      <h1 class="password">Inloggen met account</h1>
+      <form method="POST" id="passwordForm">
+        <div class="form-group">
+          <label for="username">Gebruikers naam:</label>
+          <input autocomplete="new-password" type="text" id="login-username" name="login-username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Wachtwoord:</label>
+          <input autocomplete="new-password" type="password" id="login-password" name="login-password" required>
+        </div>
+        <div class="btn-container">
+          <button class="btn" id="login-account-btn" onclick="loginAccount()" type="button">Login</button>
+        </div>
+        <div id="login-error-message" class="error-message"></div>
+      </form>
+    </div>
+  </div>
+  <!-- Succesfull account creation message-->
+  <div id="success-create-message" class="success-create-message fadeInBottom">Je account is successvol aangemaakt!</div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+  <script>
+    let socket = io('/');
+    
+    socket.on('connect', () => {
+      console.log('Connected login to socket.io');
+
+      socket.on("disconnect", function () {
+        console.log("A user disconnected");
+      });
+    });
+    
+    function createAccount() {
+      const usernameInput = document.getElementById("username");
+      const passwordInput = document.getElementById("password");
+      const joinButton = document.getElementById('join-button');
+      const createAccountError = document.getElementById('create-account-error-message');
+      
+      //sets variable to input of the id element
+      const username = usernameInput.value;
+      const password = passwordInput.value;
+      
+      createAccountError.innerText = '';
+      
+      //check if username or password are emtpy
+      if (username.trim() === '' || password.trim() === '') {
+        usernameInput.value = '';
+        passwordInput.value = '';
+        
+        //immediately show error message, after 3 sec clear the text
+        setTimeout(() => {
+          createAccountError.innerText = 'Gebruikersnaam en/of wachtwoord kan niet leeg zijn!';
+          setTimeout(() => {
+            createAccountError.innerText = '';
+          }, 3000);
+        }, 0);
+        return;
+      }
+      
+      //store username & password value in userData
+      const userData = {
+        username: username,
+        password: password,
+      };
+      
+      console.log("client side username:", userData);
+      // Make an HTTP POST request to server side
+      fetch('http://localhost:3002/api/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        //send Userdata to server side
+        body: JSON.stringify(userData),
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log("data:", data)
+          //check if there is data.message & if message includes specific string from server
+          if (data.message && data.message.includes('Account creation successfull')) {
+            // Set the token as a cookie
+            const successMessage = document.getElementById('success-create-message');
+            successMessage.style.display = 'block';
+            
+            setTimeout(() => {
+              successMessage.classList.add('fadeOutBottom');
+              
+              // Remove the fade-in class to avoid conflicting animations
+              successMessage.classList.remove('fadeInBottom');
+              
+              // Hide the success message after the animation completes
+              setTimeout(() => {
+                successMessage.style.display = 'none';
+              }, 800);
+            }, 3000);
+            
+            // document.cookie = `your_token_cookie=${data.token}; path=/`;
+            console.log("Account created successfully");
+            //clear username and password fields
+            usernameInput.value = '';
+            passwordInput.value = '';
+          // check if data.message & if message includes specific string from server
+          } else if (data.message && data.message.includes('Username is already in use')) {
+              //clear username and password fields
+              usernameInput.value = '';
+              passwordInput.value = '';
+              
+               //immediately show error message, after 3 sec clear the text
+              setTimeout(() => {
+                document.getElementById('create-account-error-message').innerText = 'Gebruikersnaam is al in gebruik';
+                setTimeout(() => {
+                  document.getElementById('create-account-error-message').innerText = '';
+                }, 3000);
+              }, 0);
+               //clear username & password input
+              usernameInput.value = '';
+              passwordInput.value = '';
+        }})
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+    
+    function loginAccount() {
+      const usernameInput = document.getElementById('login-username');
+      const passwordInput = document.getElementById('login-password');
+      const joinButton = document.getElementById('login-account-btn');
+      const loginError = document.getElementById('login-error-message');
+      
+      const username = usernameInput.value;
+      const password = passwordInput.value;
+      
+      //check if username or password are emtpy
+      if (username.trim() === '' || password.trim() === '') {
+      
+        usernameInput.value = '';
+        passwordInput.value = '';
+        //immediately show error message, after 3 sec clear the text
+        setTimeout(() => {
+          loginError.innerText = 'Gebruikersnaam en/of wachtwoord kan niet leeg zijn!';
+          setTimeout(() => {
+            loginError.innerText = '';
+          }, 3000);
+        }, 0);
+        return;
+      }
+    
+      //store username & password value in userData
+      const userData = {
+        username: username,
+        password: password
+      };
+      
+      console.log("userdata login", userData);
+      // Make an HTTP POST request to your server
+      fetch('http://localhost:3002/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        //send Userdata to server side
+        body: JSON.stringify(userData),
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log("login token:", data);
+          if (data.token) {
+            // Set the token as a cookie
+            document.cookie = `your_token_cookie=${data.token}; path=/`;
+            
+            setTimeout(() => {
+              window.location.href = '/my_plants/index.html';
+            }, 200);
+          } else {
+            if (data.message && data.message.includes('Invalid username or password')) {
+              //display error message if Invalid username or password.
+              
+              usernameInput.value = '';
+              passwordInput.value = '';
+              
+              setTimeout(() => {
+                document.getElementById('login-error-message').innerText = 'Gebruikersnaam of/en wachtwoord is verkeerd.';
+                setTimeout(() => {
+                  document.getElementById('login-error-message').innerText = '';
+                }, 3000);
+              }, 0);
+            } else {
+              console.error('Failed to create account');
+            }
+          }
+          }
+        )
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      }
+  </script>
+</body>
+</html>
